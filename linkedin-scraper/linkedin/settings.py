@@ -12,7 +12,9 @@ BOT_NAME = 'linkedin'
 SPIDER_MODULES = ['linkedin.spiders']
 NEWSPIDER_MODULE = 'linkedin.spiders'
 
-DOWNLOAD_DELAY = 2
+AUTOTHROTTLE_ENABLED = False
+AUTOTHROTTLE_MAX_DELAY = 2
+DOWNLOAD_DELAY = 0.5
 
 USER_AGENT = 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
 
@@ -23,8 +25,7 @@ ROBOTSTXT_OBEY = False
 
 SCRAPEOPS_API_KEY = '4009e3f5-6658-4b58-86a6-0e86d02ce488'
 
-SCRAPEOPS_PROXY_ENABLED = True
-
+SCRAPEOPS_PROXY_ENABLED = False
 # Add In The ScrapeOps Monitoring Extension
 EXTENSIONS = {
 'scrapeops_scrapy.extension.ScrapeOpsMonitor': 500, 
@@ -41,5 +42,5 @@ EXTENSIONS = {
 #     'scrapeops_scrapy_proxy_sdk.scrapeops_scrapy_proxy_sdk.ScrapeOpsScrapyProxySdk': 725,
 # }
 
-# Max Concurrency On ScrapeOps Proxy Free Plan is 1 thread
-CONCURRENT_REQUESTS = 1
+CONCURRENT_REQUESTS = 64
+LOG_LEVEL = "DEBUG"

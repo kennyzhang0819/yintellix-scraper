@@ -1,8 +1,8 @@
 import scrapy
 import json
 
-class LinkedJobsSpider(scrapy.Spider):
-    name = "linkedin_jobs"
+class LinkedSearchSpider(scrapy.Spider):
+    name = "linkedin_search"
     api_url = f'https://www.linkedin.com/jobs/search?keywords=Sales%20Development%20Representative&location=United%20States&geoId=103644278&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum={0}' 
     company_links = []
     
