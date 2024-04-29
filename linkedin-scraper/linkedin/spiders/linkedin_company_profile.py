@@ -1,4 +1,3 @@
-import json
 import scrapy
 import pandas as pd
 from twisted.internet import reactor, defer
@@ -7,7 +6,6 @@ from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 from scrapy import signals
 from scrapy.signalmanager import dispatcher
-import time
 import re
 import numpy as np
 from collections import Counter
@@ -15,6 +13,9 @@ from bs4 import BeautifulSoup
 
 class GetCompanyLinksSpider(scrapy.Spider):
     name = "linkedin_jobs"
+    custom_settings = {
+        "HTTPCACHE_ENABLED": "True"
+    }
     api_url = api_url = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=Sales%2BDevelopment%2BRepresentative&location=United%2BStates&geoId=103644278&trk=public_jobs_jobs-search-bar_search-submit&start='  
     company_links = []
     max_company = 10
@@ -28,6 +29,9 @@ class GetCompanyLinksSpider(scrapy.Spider):
     def parse_job(self, response):
         first_job_on_page = response.meta['first_job_on_page']
 
+
+        job_item = {}
+        
         job_item = {}
         jobs = response.css("li")
 
@@ -37,7 +41,7 @@ class GetCompanyLinksSpider(scrapy.Spider):
         print('*****')
         
         for job in jobs:
-            
+            job_item = {}
             job_item['job_title'] = job.css("h3::text").get(default='not-found').strip()
             job_item['job_detail_url'] = job.css(".base-card__full-link::attr(href)").get(default='not-found').strip()
             job_item['job_listed'] = job.css('time::text').get(default='not-found').strip()
@@ -45,7 +49,7 @@ class GetCompanyLinksSpider(scrapy.Spider):
             job_item['company_name'] = job.css('h4 a::text').get(default='not-found').strip()
             job_item['company_link'] = job.css('h4 a::attr(href)').get(default='not-found')
             job_item['company_location'] = job.css('.job-search-card__location::text').get(default='not-found').strip()
-            self.company_links.append({'company_name': job_item['company_name'], 'company_link': job_item['company_link']})
+            self.company_links.append(job_item)
         
 
         if len(self.company_links) < self.max_company:
@@ -70,12 +74,18 @@ class GetCompanyProfileSpider(scrapy.Spider):
         self.company_pages = df['company_link']
         self.company_pages = list(set(self.company_pages))
         self.size = len(self.company_pages)
-        for index, url in enumerate(self.company_pages):
-            yield scrapy.Request(url=url, callback=self.parse_response, meta={'index': index})
+        
+        company_index_tracker = 0
+
+        first_url = self.company_pages[company_index_tracker]
+
+        yield scrapy.Request(url=first_url, callback=self.parse_response, meta={'company_index_tracker': company_index_tracker})
         
     def parse_response(self, response):
-        index = response.meta['index']
-        print('****** processing ' + str(index) + ' / ' + str(self.size))
+        company_index_tracker = response.meta['company_index_tracker']
+        print('***************')
+        print('****** Scraping page ' + str(company_index_tracker+1) + ' of ' + str(len(self.company_pages)))
+        print('***************')
 
         company_item = {}
 
@@ -102,6 +112,13 @@ class GetCompanyProfileSpider(scrapy.Spider):
             print("Some details missing for this company. Skipping those details.")
         
         self.company_data.append(company_item)
+        
+        company_index_tracker = company_index_tracker + 1
+
+        if company_index_tracker <= (len(self.company_pages)-1):
+            next_url = self.company_pages[company_index_tracker]
+
+            yield scrapy.Request(url=next_url, callback=self.parse_response, meta={'company_index_tracker': company_index_tracker})
     
     def spider_closed(self, spider):
         df = pd.DataFrame(self.company_data)
@@ -109,23 +126,30 @@ class GetCompanyProfileSpider(scrapy.Spider):
 
 class CompanyJobsMatcherSpider(scrapy.Spider):
     name = "linkedin_company_jobs"
+    custom_settings = {
+        "HTTPCACHE_ENABLED": "True",
+    }
     company_job_links = []
-    size = 0
-    
+    max_jobs_per_company = 100
     
     def start_requests(self):
         dispatcher.connect(self.spider_closed, signals.spider_closed)
         df = pd.read_csv('company_profiles.csv')
         df = df[["name", "job_link"]]
-        # df['job_link'] = df['job_link'].apply(self.transform_url)
         self.size = len(df)
-        for index, url in enumerate(df['job_link']):
-            yield scrapy.Request(url=url, callback=self.parse_job, meta={'index': index})
         
-        
+        for index, row in df.iterrows():
+            initial_url = self.transform_url(row['job_link'], 0)
+            yield scrapy.Request(url=initial_url, callback=self.parse_job, 
+                          meta={'index': index, 'jobs_count': 0, 'base_url': row['job_link']})
+    
     def parse_job(self, response):
         index = response.meta['index']
-        print('****** processing ' + str(index) + ' / ' + str(self.size))
+        jobs_count = response.meta['jobs_count']
+        base_url = response.meta['base_url']
+        
+        print(f'****** Processing {index} / {self.size}, Jobs Count: {jobs_count}')
+        
         jobs = response.css(".base-card")
         
         for job in jobs:
@@ -133,19 +157,29 @@ class CompanyJobsMatcherSpider(scrapy.Spider):
             job_link = job.css("a::attr(href)").get(default='not-found').strip()
             job_title = job.css("h3::text").get(default='not-found').strip()
             job_location = job.css(".job-search-card__location::text").get(default='not-found').strip()
-            self.company_job_links.append({'company_name': company_name, 
-                                           'job_link': job_link, 
-                                           'job_title': job_title, 
-                                           'job_location': job_location})
+            
+            self.company_job_links.append({
+                'company_name': company_name,
+                'job_link': job_link,
+                'job_title': job_title,
+                'job_location': job_location
+            })
+        
+        jobs_count += len(jobs)
+        if jobs_count < self.max_jobs_per_company:
+            next_url = self.transform_url(base_url, jobs_count)
+            yield scrapy.Request(url=next_url, callback=self.parse_job, 
+                          meta={'index': index, 'jobs_count': jobs_count, 'base_url': base_url})
+    
             
     def spider_closed(self, spider):
         df = pd.DataFrame(self.company_job_links)
         df.to_csv('company_jobs_relation.csv', encoding='utf-8', index=False)
         
-    def transform_url(self, url):
+    def transform_url(self, url, start_index):
         parts = url.split('/')
         if 'jobs' in parts:
-            new_url = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/' + parts[-1] + '&start='
+            new_url = f'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/{parts[-1]}&start={start_index}'
             return new_url
         return url
 
@@ -184,7 +218,6 @@ class GetJobSpecificsSpider(scrapy.Spider):
     def spider_closed(self, spider):
         df = pd.DataFrame(self.company_job_data)
         df.to_csv('company_job_specifics.csv', encoding='utf-8', index=False)
-
 
 def calculateStats():
     specifics = pd.read_csv('company_job_specifics.csv')
@@ -242,7 +275,6 @@ def calculateStats():
     grouped.to_csv('final_stats.csv', encoding='utf-8', index=False)
 
 
-    
 settings = get_project_settings()
 configure_logging(settings)
 runner = CrawlerRunner(settings)

@@ -1,11 +1,11 @@
 Company Name,Company Description,Location Distribution,Most Used Word in Descriptions,Average Salary,Median Salary,Salary Std Dev,Highest Paid Role
 Assembled,We help modern organizations scale great customer support.,{},,,,,
 Boston Celtics,The Official LinkedIn page of the 17-Time World Champions,{},,,,,
-CivicPlus,Powering and Empowering Government,"{'United States': 7, 'Tallahassee, FL': 2, 'Dallas, TX': 1, 'Durham, NC': 1, 'Manhattan, KS': 1}",team,54825.0,54825.0,28036.78387404661,74650.0
+CivicPlus,Powering and Empowering Government,"{'United States': 12, 'Tallahassee, FL': 3, 'Dallas, TX': 1, 'Raleigh, NC': 1, 'Durham, NC': 1, 'Fort Worth, TX': 1, 'Manhattan, KS': 1}",team,81487.5,80225.0,39279.60401616425,130500.0
 Flowhub,The cannabis retail platform for modern dispensaries. Making safe cannabis products accessible to every adult on Earth.,{},,,,,
-Klook,Your World of Joy,"{'Los Angeles, CA': 1, 'Manila, National Capital Region, Philippines': 1, 'Singapore': 1}",klook,,,,
-Notion,"The connected workspace for your docs, projects, and knowledge.","{'Hyderabad, Telangana, India': 2, 'Tokyo, Tokyo, Japan': 1, 'Seoul, Seoul, South Korea': 1}",notion,,,,
-Runwise,A smarter way to run your building.,{},,,,,
-Slang.ai,"Answer every call intelligently, with AI.",{},,,,,
+Klook,Your World of Joy,"{'Kuala Lumpur, Federal Territory of Kuala Lumpur, Malaysia': 5, 'Hong Kong, Hong Kong SAR': 2, 'Gurgaon, Haryana, India': 1}",klook,,,,
+Notion,"The connected workspace for your docs, projects, and knowledge.","{'New York, NY': 11, 'San Francisco, CA': 8, 'Hyderabad, Telangana, India': 2, 'Tokyo, Tokyo, Japan': 1, 'Sydney, New South Wales, Australia': 1}",notion,191888.88888888888,183500.0,55356.67178499003,290000.0
+Runwise,A smarter way to run your building.,"{'New York, NY': 5}",runwise,140000.0,140000.0,67175.14421272202,187500.0
+Slang.ai,"Answer every call intelligently, with AI.","{'New York, NY': 5, 'Salt Lake City, UT': 3}",re,110000.0,70000.0,68556.54600401044,235000.0
 Swell,Modernizing experience management for healthcare by optimizing the way they capture public reviews and private feedback,{},,,,,
-WorkWave,The Leader in Cloud-Based Field Service and Fleet Management Solutions for Companies With a Mobile Workforce.,{},,,,,
+WorkWave,The Leader in Cloud-Based Field Service and Fleet Management Solutions for Companies With a Mobile Workforce.,"{'United States': 2, 'Myrtle Beach, SC': 1, 'Georgia, United States': 1, 'Philadelphia, PA': 1, 'Raleigh, NC': 1, 'Houston, TX': 1, 'Charlotte, NC': 1}",team,68250.0,68250.0,16617.009357883868,80000.0
