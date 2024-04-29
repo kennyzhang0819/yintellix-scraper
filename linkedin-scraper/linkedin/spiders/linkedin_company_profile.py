@@ -223,21 +223,17 @@ def calculateStats():
     full_data = pd.merge(profiles, jobs_with_locations, how='left', left_on='name', right_on='company')
     
     def parse_and_normalize_salary(salary_str):
-        # Check if the salary field is NaN
         if pd.isna(salary_str) or salary_str == 'not-found':
             return None
-        # Find all monetary amounts in the salary string
         salary_range = re.findall(r'\$\d+,\d+', salary_str)
         salary_range = [int(x.replace(',', '').replace('$', '')) for x in salary_range]
         if "/yr" in salary_str:
-            # If salary is annual, use as is
             annual_salary = salary_range
         elif "/hr" in salary_str:
             # If salary is hourly, convert to annual (assuming 2080 hours per year)
             annual_salary = [x * 2080 for x in salary_range]
         else:
             return None
-        # Calculate the mean of the salary range
         if len(annual_salary) == 2:
             return np.mean(annual_salary)
         elif len(annual_salary) == 1:
