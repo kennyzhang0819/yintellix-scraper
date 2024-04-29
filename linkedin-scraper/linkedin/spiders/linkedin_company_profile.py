@@ -28,11 +28,6 @@ class GetCompanyLinksSpider(scrapy.Spider):
 
     def parse_job(self, response):
         first_job_on_page = response.meta['first_job_on_page']
-
-
-        job_item = {}
-        
-        job_item = {}
         jobs = response.css("li")
 
         num_jobs_returned = len(jobs)
@@ -253,7 +248,7 @@ def calculateStats():
     full_data['normalized_salary'] = full_data['salary'].apply(parse_and_normalize_salary)
 
     def most_frequent_word(texts):
-        stop_words = set(["the", "of", "this", "and", "in", "to", "a", "for", "your", "you", "or", "we", "with", "be", "our", "on", "is", "are", "not", "all"])
+        stop_words = set(["the", "of", "this", "and", "in", "to", "a", "for", "your", "you", "or", "we", "with", "be", "that", "s", "our", "on", "is", "are", "not", "all"])
         words = re.findall(r'\b\w+\b', ' '.join(texts).lower())
         words = [word for word in words if word not in stop_words]
         most_common = Counter(words).most_common(1)
@@ -273,7 +268,6 @@ def calculateStats():
     ]
 
     grouped.to_csv('final_stats.csv', encoding='utf-8', index=False)
-
 
 settings = get_project_settings()
 configure_logging(settings)
